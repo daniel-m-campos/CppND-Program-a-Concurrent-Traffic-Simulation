@@ -30,7 +30,8 @@ afterwards send a notification.
 
 TrafficLight::TrafficLight()
     : _currentPhase(TrafficLightPhase::kRed),
-      _uniform_dist(std::uniform_int_distribution<>(4, 6)) {}
+      _uniform_dist(std::uniform_int_distribution<>(4, 6)),
+      _engine(std::random_device()()) {}
 
 void TrafficLight::waitForGreen() {
   // TODO: FP.5b : add the implementation of the method waitForGreen, in which
