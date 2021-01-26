@@ -15,16 +15,13 @@ and _condition.wait()
 move semantics.
     // The received object should then be returned by the receive function.
 }
-
-template <typename T>
-void MessageQueue<T>::send(T &&msg)
-{
-    // TODO: FP.4a : The method send should use the mechanisms
-std::lock_guard<std::mutex>
-    // as well as _condition.notify_one() to add a new message to the queue and
-afterwards send a notification.
-}
 */
+template <typename T>
+void MessageQueue<T>::send(T &&msg) {
+  std::lock_guard<std::mutex> guard(_mutex);
+  _queue.emplace_back(std::move(msg));
+  _condition.notify_one();
+}
 
 /* Implementation of class "TrafficLight" */
 
@@ -53,11 +50,16 @@ void TrafficLight::simulate() {
 void TrafficLight::cycleThroughPhases() {
   while (true) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    TrafficLightPhase message;
     auto cycle_seconds = getRandom();
-    std::lock_guard<std::mutex> guard(_mutex);
-    _currentPhase = _currentPhase == TrafficLightPhase::kRed
-                        ? TrafficLightPhase::kGreen
-                        : TrafficLightPhase::kRed;
+    {
+      std::lock_guard<std::mutex> guard(_mutex);
+      _currentPhase = _currentPhase == TrafficLightPhase::kRed
+                          ? TrafficLightPhase::kGreen
+                          : TrafficLightPhase::kRed;
+      message = _currentPhase;
+    }
+    _queue.send(std::move(message));
   }
 }
 int TrafficLight::getRandom() { return _uniform_dist(_engine); }

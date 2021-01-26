@@ -20,7 +20,7 @@ class MessageQueue {
  private:
   std::deque<T> _queue;
   std::mutex _mutex;
-  std::condition_variable _condition_variable;
+  std::condition_variable _condition;
 };
 
 enum class TrafficLightPhase {
@@ -40,15 +40,10 @@ class TrafficLight : public TrafficObject {
   int getRandom();
   std::mt19937_64 _engine;
   std::uniform_int_distribution<> _uniform_dist;
-
-  // TODO: FP.4b : create a private member of type MessageQueue for messages
-  // of type TrafficLightPhase and use it within the infinite loop to push
-  // each new TrafficLightPhase into it by calling send in conjunction with
-  // move semantics.
-
   std::condition_variable _condition;
   std::mutex _mutex;
   TrafficLightPhase _currentPhase;
+  MessageQueue<TrafficLightPhase> _queue;
 };
 
 #endif
