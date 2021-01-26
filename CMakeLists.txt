@@ -18,6 +18,7 @@ set(BUILD_TESTS NO CACHE BOOL "Build test target")
 if (BUILD_TESTS)
     add_library(
             traffic
+            src/TrafficObject.cpp
             src/TrafficLight.cpp
     )
     add_subdirectory(tests)

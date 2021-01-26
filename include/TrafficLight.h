@@ -4,6 +4,7 @@
 #include <condition_variable>
 #include <deque>
 #include <mutex>
+#include <random>
 
 #include "TrafficObject.h"
 
@@ -37,6 +38,9 @@ class TrafficLight : public TrafficObject {
 
  private:
   void cycleThroughPhases();
+  int getRandom();
+  std::default_random_engine _engine;
+  std::uniform_int_distribution<> _uniform_dist;
 
   // TODO: FP.4b : create a private member of type MessageQueue for messages
   // of type TrafficLightPhase and use it within the infinite loop to push
