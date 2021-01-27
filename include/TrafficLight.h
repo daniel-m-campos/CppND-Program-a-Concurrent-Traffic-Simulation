@@ -37,7 +37,7 @@ class TrafficLight : public TrafficObject {
 
  private:
   void cycleThroughPhases();
-  int getRandom();
+  int cycleDurationMillis();
   std::mt19937_64 _engine;
   std::uniform_int_distribution<> _uniform_dist;
   std::condition_variable _condition;
