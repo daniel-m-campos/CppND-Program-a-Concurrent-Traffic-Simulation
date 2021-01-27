@@ -5,17 +5,15 @@
 
 /* Implementation of class "MessageQueue" */
 
-/*
 template <typename T>
-T MessageQueue<T>::receive()
-{
-    // TODO: FP.5a : The method receive should use std::unique_lock<std::mutex>
-and _condition.wait()
-    // to wait for and receive new messages and pull them from the queue using
-move semantics.
-    // The received object should then be returned by the receive function.
+T MessageQueue<T>::receive() {
+  std::unique_lock<std::mutex> lock;
+  _condition.wait(lock, [this]() { return !_queue.empty(); });
+  T message = std::move(_queue.back());
+  _queue.pop_back();
+  return message;
 }
-*/
+
 template <typename T>
 void MessageQueue<T>::send(T &&msg) {
   std::lock_guard<std::mutex> guard(_mutex);
@@ -31,10 +29,10 @@ TrafficLight::TrafficLight()
       _engine(std::random_device()()) {}
 
 void TrafficLight::waitForGreen() {
-  // TODO: FP.5b : add the implementation of the method waitForGreen, in which
-  // an infinite while-loop runs and repeatedly calls the receive function on
-  // the message queue. Once it receives TrafficLightPhase::green, the method
-  // returns.
+  while (true) {
+    auto phase = _queue.receive();
+    if (phase == TrafficLightPhase::kGreen) return;
+  }
 }
 
 TrafficLightPhase TrafficLight::getCurrentPhase() {
@@ -50,16 +48,16 @@ void TrafficLight::simulate() {
 void TrafficLight::cycleThroughPhases() {
   while (true) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    TrafficLightPhase message;
+    TrafficLightPhase phase;
     auto cycle_seconds = getRandom();
     {
       std::lock_guard<std::mutex> guard(_mutex);
       _currentPhase = _currentPhase == TrafficLightPhase::kRed
                           ? TrafficLightPhase::kGreen
                           : TrafficLightPhase::kRed;
-      message = _currentPhase;
+      phase = _currentPhase;
     }
-    _queue.send(std::move(message));
+    _queue.send(std::move(phase));
   }
 }
 int TrafficLight::getRandom() { return _uniform_dist(_engine); }
